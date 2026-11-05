@@ -94,10 +94,17 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
+        # Lienol 需要编译 rust [host]（dae / daed 依赖），峰值磁盘占用远高于其它流水线，
+        # 上一轮即在 rust 编译 40 分钟后耗尽磁盘（No space left on device）。此处额外清理大件缓存。
+        sudo rm -rf /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/PyPy /usr/share/swift \
+                    /opt/google/chrome /usr/local/share/chromium /opt/microsoft 2>/dev/null || true
+        sudo apt-get -qq clean || true
         sudo mkdir -p -m 777 /mnt/openwrt/dl /mnt/openwrt/bin /mnt/openwrt/staging_dir
         ln -sf /mnt/openwrt/dl openwrt/dl
         ln -sf /mnt/openwrt/bin openwrt/bin
         ln -sf /mnt/openwrt/staging_dir openwrt/staging_dir
+        echo "=== 编译前磁盘余量 ==="
+        df -h /
 
     - name: Update feeds
       working-directory: ./openwrt
