@@ -2,8 +2,8 @@
 # 让编译出的固件默认走 IPv4（关闭 IPv6 的自动配置与地址下发）
 #
 # 用法：bash ipv4-default.sh [源码目录]      默认 openwrt
-# 由 customize.sh 在 make defconfig 之前调用，7 条流水线（ctc_24.10 / ctc_25.12 /
-# Lean / Lienol / nanopi-r4s / r5s / r6s）共用此脚本。
+# 由 customize.sh 在 make defconfig 之前调用，剩余三条流水线
+# （ctc_25.12 / Lean / Lienol）共用此脚本。
 #
 # 本仓库的上游分两类，IPv6 默认值的来源并不相同，两处都必须处理：
 #   A. immortalwrt(24.10/25.12)、coolsnowwolf-lede：
