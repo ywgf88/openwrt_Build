@@ -3,6 +3,9 @@
 # Modify default IP
 sed -i 's/192.168.1.1/192.168.100.1/g' openwrt/package/base-files/files/bin/config_generate
 
+# 默认网络改为IPv4（关闭IPv6自动配置与地址下发，适用于全部上游）
+bash "$(cd "$(dirname "$0")" && pwd)/ipv4-default.sh" openwrt
+
 # Modify default theme
 #sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
 
