@@ -186,13 +186,13 @@ jobs:
         R2_BUCKET: ${{ secrets.R2_BUCKET }}
       if: steps.organize.outputs.status == 'success' && !cancelled()
       run: |
+        if [ -z "$R2_ACCESS_KEY_ID" ] || [ -z "$R2_SECRET_ACCESS_KEY" ] || [ -z "$R2_BUCKET" ] || [ -z "$R2_ENDPOINT" ]; then
+          echo "Cloudflare R2 凭据未配置，跳过 R2 上传；固件仍作为 Release 附件与 Actions artifact 提供"
+          exit 0
+        fi
         curl -fsSL https://rclone.org/install.sh | sudo bash
         mkdir -p ~/.config/rclone
         R2_ID="${R2_ACCESS_KEY_ID}"
-        if [ -z "$R2_ID" ] || [ -z "$R2_SECRET_ACCESS_KEY" ] || [ -z "$R2_BUCKET" ] || [ -z "$R2_ENDPOINT" ]; then
-          echo "Missing Cloudflare R2 credentials"
-          exit 1
-        fi
         cat > ~/.config/rclone/rclone.conf <<EOF
         [r2]
         type = s3
@@ -263,12 +263,14 @@ jobs:
       id: tag
       if: success() && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        R2_PUBLIC_BASE_URL="${{ secrets.R2_PUBLIC_BASE_URL }}"
-        [ -z "$R2_PUBLIC_BASE_URL" ] && R2_PUBLIC_BASE_URL="https://down.dllkids.xyz"
-        R2_LINK="${R2_PUBLIC_BASE_URL%/}/firmware/${{matrix.target}}/"
-        echo -e "墙内外加速下载 🎈:\n" >> release.txt
-        echo -e "[Cloudflare R2]($R2_LINK)\n" >> release.txt
         touch release.txt
+        echo "固件下载：见本 Release 的 Assets 附件" >> release.txt
+        if [ -n "${{ secrets.R2_BUCKET }}" ]; then
+          R2_PUBLIC_BASE_URL="${{ secrets.R2_PUBLIC_BASE_URL }}"
+          [ -z "$R2_PUBLIC_BASE_URL" ] && R2_PUBLIC_BASE_URL="https://down.dllkids.xyz"
+          R2_LINK="${R2_PUBLIC_BASE_URL%/}/firmware/${{matrix.target}}/"
+          echo -e "\n[Cloudflare R2 镜像]($R2_LINK)" >> release.txt
+        fi
         [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
         [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
